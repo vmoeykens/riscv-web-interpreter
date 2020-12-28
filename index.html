@@ -107,6 +107,13 @@
                         <tbody id="registers">
                             <tr>
                                 <td>0</td>
+                                <td>Program Counter</td>
+                                <td>0</td>
+                                <td>0x00000000</td>
+                                <td>0b00000000000000000000000000000000</td>
+                            </tr>
+                            <tr>
+                                <td>0</td>
                                 <td>x0 (zero)</td>
                                 <td>0</td>
                                 <td>0x00000000</td>
@@ -624,8 +631,14 @@
         /* TODO: Check this displayRegisters(), because it changes the front-end display to MIPS */
 
         function displayRegisters() {
+            var programCounter = globalP.getProgramCounter();
             var registers = globalP.getRegisters();
-            var registersHTML = sprintf('<tr><td>%d</td><td>x%d (%s)</td><td>%d</td><td>0x%08x</td><td>0b%032s</tr>',
+            // Set the program counter value first
+            var registersHTML = sprintf('<tr><td>%d</td><td>Program Counter</td><td>%d</td><td>0x%08x</td><td>0b%032s</tr>',
+                0, programCounter, programCounter >>> 0, programCounter.toString(2));
+            console.log("PC Hex: " + programCounter >>> 0);
+
+            registersHTML += sprintf('<tr><td>%d</td><td>x%d (%s)</td><td>%d</td><td>0x%08x</td><td>0b%032s</tr>',
                 registers[0], 0, getRegisterSyntacticSugar(0), registers[0], registers[0] >>> 0, (registers[i] >>> 0).toString(2));
             for (var i = 1; i < 32; ++i) {
                 registersHTML += sprintf('<tr><td><input class="init-value" type="text" value="%d"></td><td>x%d (%s)</td><td>%d</td><td>0x%08x</td><td>0b%032s</tr>',
