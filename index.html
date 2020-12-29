@@ -69,6 +69,18 @@
                     <div class="btn-group">
                         <button onclick="download()" id="save" class="btn btn-primary">Save</button>
                     </div>
+                    <div class="btn-group">
+                        <button id="save-extension" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                            .asc
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="save-extension dropdown-menu">
+                            <li><a href="#" onclick="setFileExtension('.asc');" data-proofer-ignore="">.asc</a></li>
+                            <li><a href="#" onclick="setFileExtension('.s');" data-proofer-ignore="">.s</a></li>
+                        </ul>
+                    </div>
+
                 </div>
                 <input id="file-input" type="file" name="name" style="display: none;" />
                 <br>
@@ -467,13 +479,20 @@
             }
         }
 
+        var file_extension = '.asc';
+
+        function setFileExtension(extension) {
+            document.getElementById('save-extension').innerHTML = extension + ' <span class="caret"></span>'
+            file_extension = extension;
+        }
+
         function download(){
             // solution from https://stackoverflow.com/questions/21479107/saving-html5-textarea-contents-to-file
             var text = document.getElementById("code").value;
             text = text.replace(/\n/g, "\r\n"); // retain line breaks.
             var blob = new Blob([text], { type: "text/plain"});
             var anchor = document.createElement("a");
-            anchor.download = "my-riscv-assembly.s";
+            anchor.download = "my-riscv-assembly" + file_extension;
             anchor.href = window.URL.createObjectURL(blob);
             anchor.target ="_blank";
             anchor.style.display = "none";
