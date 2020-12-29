@@ -67,7 +67,7 @@
                         <button onclick="file_input.click();" id="load" class="btn btn-primary">Load</button>
                     </div>
                     <div class="btn-group">
-                        <button id="save" class="btn btn-primary">Save</button>
+                        <button onclick="download()" id="save" class="btn btn-primary">Save</button>
                     </div>
                 </div>
                 <input id="file-input" type="file" name="name" style="display: none;" />
@@ -450,24 +450,36 @@
     <script src="index_files/risc-v.js"></script>
     <script src="index_files/FileSaver.js"></script>
     <script>
+        // File handling
         var file_input = document.createElement('input');
         file_input.type = 'file';
-        file_input.accept = '.asc,.s';
+        file_input.accept = '.asc,.s'; // only allow loading of .asc or .s files
 
         file_input.onchange = e => { 
-            // getting a hold of the file reference
             var file = e.target.files[0]; 
 
-            // setting up the reader
             var reader = new FileReader();
             reader.readAsText(file,'UTF-8');
 
-            // here we tell the reader what to do when it's done reading...
             reader.onload = readerEvent => {
-                var content = readerEvent.target.result; // this is the content!
+                var content = readerEvent.target.result;
                 document.getElementById('code').value = content;
-                console.log( content );
             }
+        }
+
+        function download(){
+            // solution from https://stackoverflow.com/questions/21479107/saving-html5-textarea-contents-to-file
+            var text = document.getElementById("code").value;
+            text = text.replace(/\n/g, "\r\n"); // retain line breaks.
+            var blob = new Blob([text], { type: "text/plain"});
+            var anchor = document.createElement("a");
+            anchor.download = "my-riscv-assembly.s";
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.target ="_blank";
+            anchor.style.display = "none";
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
         }
     </script>
     <script>
