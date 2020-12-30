@@ -26,6 +26,8 @@
         <div class="row">
             <div class="col-md-6">
                 <p class="lead">Input your RISC-V code here:</p>
+                <div><input id="title" type="text" value="my-riscv-assembly"></input> <span id="title-extension">.asc</span></div>
+                <br>
                 <div class="form-group">
                     <textarea id="code" rows="15" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
                 </div>
@@ -463,27 +465,37 @@
     <script src="index_files/FileSaver.js"></script>
     <script>
         // File handling
+
+        var file_extension = '.asc';
+
+        function setFileExtension(extension) {
+            document.getElementById('save-extension').innerHTML = extension + ' <span class="caret"></span>';
+            document.getElementById('title-extension').innerHTML = extension;
+            file_extension = extension;
+        }
+
         var file_input = document.createElement('input');
         file_input.type = 'file';
         file_input.accept = '.asc,.s'; // only allow loading of .asc or .s files
 
         file_input.onchange = e => { 
             var file = e.target.files[0]; 
-
+            var loaded_file_extension = file.name.match(/\.[0-9a-z]+$/i)[0];
+            var file_name = file.name.match(/.*(?=\.)/gm)[0];
+            document.getElementById('title').value = file_name;
             var reader = new FileReader();
             reader.readAsText(file,'UTF-8');
+
+            if (loaded_file_extension === '.asc' || loaded_file_extension === '.s') {
+                setFileExtension(loaded_file_extension);
+            } else {
+                console.log("File extension doesn't match .s or .asc");
+            }
 
             reader.onload = readerEvent => {
                 var content = readerEvent.target.result;
                 document.getElementById('code').value = content;
             }
-        }
-
-        var file_extension = '.asc';
-
-        function setFileExtension(extension) {
-            document.getElementById('save-extension').innerHTML = extension + ' <span class="caret"></span>'
-            file_extension = extension;
         }
 
         function download(){
@@ -492,7 +504,8 @@
             text = text.replace(/\n/g, "\r\n"); // retain line breaks.
             var blob = new Blob([text], { type: "text/plain"});
             var anchor = document.createElement("a");
-            anchor.download = "my-riscv-assembly" + file_extension;
+            var file_name = document.getElementById('title').value;
+            anchor.download = file_name + file_extension;
             anchor.href = window.URL.createObjectURL(blob);
             anchor.target ="_blank";
             anchor.style.display = "none";
