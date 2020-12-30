@@ -25,6 +25,14 @@ textarea {
     float: right;
 }
 
+#version{
+    margin: 10px;
+    font-family: sans-serif;
+    font-style: italic;
+    font-size: 12px;
+    float: left;
+}
+
 #recent-instruction {
     font-family: monospace;
     font-size: 12px;
