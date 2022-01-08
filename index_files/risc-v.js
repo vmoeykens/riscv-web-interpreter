@@ -136,6 +136,10 @@ class Program {
         }
     }
 
+    getProgramCounter() {
+        return this.pc;
+    }
+
     getRegisters() {
         return this.registers;
     }
@@ -396,6 +400,7 @@ class Program {
     step() {
       this.numCycles=this.numCycles+1;
       console.log(this.numCycles);
+      console.log("PC: " + this.pc);
         if (!this.verifyPC(this.pc) || this.pc / 4 >= this.insns.length ) {
             console.log("PC is invalid!! PC = " + this.pc);
             return;

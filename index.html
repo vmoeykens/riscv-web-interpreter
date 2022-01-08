@@ -26,6 +26,8 @@
         <div class="row">
             <div class="col-md-6">
                 <p class="lead">Input your RISC-V code here:</p>
+                <div><input id="title" type="text" value="my-riscv-assembly"></input> <span id="title-extension">.asc</span></div>
+                <br>
                 <div class="form-group">
                     <textarea id="code" rows="15" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
                 </div>
@@ -61,6 +63,28 @@
                         </ul>
                     </div>
                 </div>
+                <br>
+                <div class="btn-group btn-group-justified" role="group">
+                    <div class="btn-group">
+                        <button onclick="file_input.click();" id="load" class="btn btn-primary">Load</button>
+                    </div>
+                    <div class="btn-group">
+                        <button onclick="download()" id="save" class="btn btn-primary">Save</button>
+                    </div>
+                    <div class="btn-group">
+                        <button id="save-extension" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                            .asc
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="save-extension dropdown-menu">
+                            <li><a href="#" onclick="setFileExtension('.asc');" data-proofer-ignore="">.asc</a></li>
+                            <li><a href="#" onclick="setFileExtension('.s');" data-proofer-ignore="">.s</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+                <input id="file-input" type="file" name="name" style="display: none;" />
                 <br>
                 <div id="recent-instruction" class="well">The most recent instructions will be shown here when stepping.
                 </div>
@@ -105,6 +129,13 @@
                             </tr>
                         </thead>
                         <tbody id="registers">
+                            <tr>
+                                <td>0</td>
+                                <td>Program Counter</td>
+                                <td>0</td>
+                                <td>0x00000000</td>
+                                <td>0b00000000000000000000000000000000</td>
+                            </tr>
                             <tr>
                                 <td>0</td>
                                 <td>x0 (zero)</td>
@@ -422,6 +453,7 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="version"><a href="https://github.com/vmoeykens/riscv-web-interpreter" target="_none">v0.2.1</a></div>
                 <div id="credits">Credit to Danny Qiu for the creation of the original MIPS interpreter.</div>
             </div>
         </div>
@@ -432,6 +464,57 @@
     <script src="index_files/bootstrap.js"></script>
     <script src="index_files/risc-v.js"></script>
     <script src="index_files/FileSaver.js"></script>
+    <script>
+        // File handling
+
+        var file_extension = '.asc';
+
+        function setFileExtension(extension) {
+            document.getElementById('save-extension').innerHTML = extension + ' <span class="caret"></span>';
+            document.getElementById('title-extension').innerHTML = extension;
+            file_extension = extension;
+        }
+
+        var file_input = document.createElement('input');
+        file_input.type = 'file';
+        file_input.accept = '.asc,.s'; // only allow loading of .asc or .s files
+
+        file_input.onchange = e => { 
+            var file = e.target.files[0]; 
+            var loaded_file_extension = file.name.match(/\.[0-9a-z]+$/i)[0];
+            var file_name = file.name.match(/.*(?=\.)/gm)[0];
+            document.getElementById('title').value = file_name;
+            var reader = new FileReader();
+            reader.readAsText(file,'UTF-8');
+
+            if (loaded_file_extension === '.asc' || loaded_file_extension === '.s') {
+                setFileExtension(loaded_file_extension);
+            } else {
+                console.log("File extension doesn't match .s or .asc");
+            }
+
+            reader.onload = readerEvent => {
+                var content = readerEvent.target.result;
+                document.getElementById('code').value = content;
+            }
+        }
+
+        function download(){
+            // solution from https://stackoverflow.com/questions/21479107/saving-html5-textarea-contents-to-file
+            var text = document.getElementById("code").value;
+            text = text.replace(/\n/g, "\r\n"); // retain line breaks.
+            var blob = new Blob([text], { type: "text/plain"});
+            var anchor = document.createElement("a");
+            var file_name = document.getElementById('title').value;
+            anchor.download = file_name + file_extension;
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.target ="_blank";
+            anchor.style.display = "none";
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+        }
+    </script>
     <script>
         $('#code').linedtextarea();
         $('.codelines').on('click', '.lineno', function () {
@@ -624,8 +707,14 @@
         /* TODO: Check this displayRegisters(), because it changes the front-end display to MIPS */
 
         function displayRegisters() {
+            var programCounter = globalP.getProgramCounter();
             var registers = globalP.getRegisters();
-            var registersHTML = sprintf('<tr><td>%d</td><td>x%d (%s)</td><td>%d</td><td>0x%08x</td><td>0b%032s</tr>',
+            // Set the program counter value first
+            var registersHTML = sprintf('<tr><td>%d</td><td>Program Counter</td><td>%d</td><td>0x%08x</td><td>0b%032s</tr>',
+                0, programCounter, programCounter >>> 0, programCounter.toString(2));
+            console.log("PC Hex: " + programCounter >>> 0);
+
+            registersHTML += sprintf('<tr><td>%d</td><td>x%d (%s)</td><td>%d</td><td>0x%08x</td><td>0b%032s</tr>',
                 registers[0], 0, getRegisterSyntacticSugar(0), registers[0], registers[0] >>> 0, (registers[i] >>> 0).toString(2));
             for (var i = 1; i < 32; ++i) {
                 registersHTML += sprintf('<tr><td><input class="init-value" type="text" value="%d"></td><td>x%d (%s)</td><td>%d</td><td>0x%08x</td><td>0b%032s</tr>',
