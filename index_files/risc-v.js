@@ -45,6 +45,7 @@ class Program {
 
     constructor(instructions) {
         this.errors = [];
+        this.op_errors = [];
         this.pc = 0x0;
         this.line = 0;
         this.registers = new Int32Array(32);
@@ -150,6 +151,15 @@ class Program {
 
     getErrors() {
         return this.errors;
+    }
+
+    getOpErrors() {
+        return this.op_errors;
+    }
+
+    pushOpError(errmsg) {
+        console.log(errmsg);
+        this.op_errors.push(errmsg);
     }
 
     pushError(errmsg) {
@@ -578,6 +588,10 @@ class Program {
                     this.verifyTokenTypes(tokens, [this.TOKEN_TYPE_REG, this.TOKEN_TYPE_IMM], "auipc rd, rs1");
                     this.auipc(tokens[0], tokens[1]);
                     break;
+                case "error":
+                    this.verifyTokenTypes(tokens, [this.TOKEN_TYPE_IMM], "ERROR imm");
+                    this.error_op(tokens[0]);
+                    break;
                 default:
                     this.pushError("Unsupported Op [line " + this.line +"]: " + op);
             }
@@ -987,6 +1001,14 @@ class Program {
         if(rd != 0){
             this.registers[rd] = imm << 12;
         }
+    }
+
+    /*
+    * error
+    - Summary   : Raise an error with a custom immediate value 
+    */
+    error_op(imm) {
+        this.pushOpError("Error raised [line " + this.line + "]: " + imm);
     }
 
     /** Not used in the main browser runner */

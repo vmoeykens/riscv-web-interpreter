@@ -23,6 +23,10 @@
             <p class="lead">OOPS! Your RISC-V Assembly code ran, but there were errors...</p>
             <div id="errors"></div>
         </div>
+        <div id="errors-op-container" class="alert alert-danger" style="display: none;">
+            <p class="lead">ERROR! Your RISC-V Assembly code raised an error.</p>
+            <div id="errors-op"></div>
+        </div>
         <div class="row">
             <div class="col-md-6">
                 <p class="lead">Input your RISC-V code here:</p>
@@ -111,6 +115,7 @@
                     <li>Jumps: <code>JAL</code>, <code>JALR</code></li>
                     <li>Branches: <code>BEQ</code>, <code>BNE</code>,<code>BLT</code>, <code>BGE</code>,
                         <code>BLTU</code>, <code>BGEU</code></li>
+                    <li>Custom Opcodes: <code>ERROR</code></li>
                 </ul>
                 <p>RISC-V Reference: <a
                         href="https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf">riscv-spec-v2.2.pdf</a>
@@ -558,6 +563,7 @@
             displayRegisters();
             displayMemory();
             displayErrors();
+            displayOpErrors();
             document.getElementById('step').parentElement.style.display = "";
             document.getElementById('run').parentElement.style.display = "";
             document.getElementById('stop').parentElement.style.display = "none";
@@ -618,6 +624,14 @@
                 return;
             }
 
+            if (globalP.getOpErrors().length > 0) {
+                stop();
+                displayRegisters();
+                displayMemory();
+                displayOpErrors();
+                return;
+            }
+
             if (globalP.pc / 4 < globalP.insns.length) {
                 var currentInsn = globalP.insns[globalP.pc / 4];
                 trackInsn(currentInsn, false);
@@ -641,17 +655,23 @@
             displayRegisters();
             displayMemory();
             displayErrors();
+            displayOpErrors();
         }
 
         function stepWithBreakpoint() {
-            if (globalP.getErrors().length > 0) {
-                console.log(globalP.getErrors());
-            }
             if (globalP.getErrors().length > 0) {
                 stop();
                 displayRegisters();
                 displayMemory();
                 displayErrors();
+                return;
+            }
+
+            if (globalP.getOpErrors().length > 0) {
+                stop();
+                displayRegisters();
+                displayMemory();
+                displayOpErrors();
                 return;
             }
 
@@ -775,11 +795,20 @@
             }
         }
 
+        function displayOpErrors() {
+            var errors = globalP.getOpErrors();
+            if (errors.length > 0) {
+                document.getElementById('errors-op').innerHTML = errors.join('<br>');
+                document.getElementById('errors-op-container').style.display = "";
+            }
+        }
+
         function clearAlerts() {
             document.getElementById('warnings-container').innerHTML = '';
             document.getElementById('warnings-container').style.display = "none";
             document.getElementById('errors').innerHTML = '';
             document.getElementById('errors-container').style.display = "none";
+            document.getElementById('errors-op-container').style.display = "none";
         }
 
         function initializeRegisters(program) {
