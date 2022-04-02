@@ -947,6 +947,8 @@ class Program {
         var newpc = (this.pc - 4) + imm; //negate delay slot
         if (!this.verifyPC(newpc)) {
             this.pushError("Misaligned jump target (must be a multiple of 4 and in program range) [line " + this.line + "]: " + imm);
+        } else if (this.pc == newpc) {
+            this.pushError("New program counter " + newpc + " is the same as the current program counter!");
         }
         else {
             this.pc = newpc;
@@ -979,6 +981,8 @@ class Program {
 
         if (!this.verifyPC(newpc)) {
             this.pushError("Bad PC value to jump to for register " + rs + " (must be a multiple of 4 and in program range) [line " + this.line + "]: " + newpc);
+        } else if (this.pc == newpc) {
+            this.pushError("New program counter " + newpc + " is the same as the current program counter!");
         }
         else {
             this.pc = newpc;
