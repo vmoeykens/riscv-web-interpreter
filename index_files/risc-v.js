@@ -839,8 +839,9 @@ class Program {
             var newpc = (this.pc - 4) + offset; //offset used to be relative to delay slot - what now?
             if (!this.verifyPC(newpc)) {
                 this.pushError("Bad branch offset (must be in program range) [line " + this.line + "]: " + offset);
-            }
-            else {
+            } else if ((this.pc - 4) == newpc) {
+                this.pushError("Branch target is the same as current PC! Infinite loop!");
+            } else {
                 var branch = false;
                 if (predicate(rs1, rs2)) {
                     branch = true;
